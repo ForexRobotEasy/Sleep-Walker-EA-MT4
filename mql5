@@ -1,0 +1,94 @@
+
+//+------------------------------------------------------------------+
+//|                                             Sleep Walker EA MT4   |
+//|                                             Developer: Forex Robot Easy Team   |
+//|                                             Website: forexroboteasy.com   |
+//+------------------------------------------------------------------+
+#property strict
+
+// Define input parameters
+input double LotSize = 0.01; // Lot size for trading
+input double StopLoss = 10; // Stop loss in pips
+input double TakeProfit = 20; // Take profit in pips
+
+// Define global variables
+datetime startTime; // Start time for trading
+datetime endTime; // End time for trading
+
+// Define trade management parameters
+int magicNumber = 12345; // Magic number for identifying trades
+int slippage = 3; // Maximum allowed slippage in pips
+
+//+------------------------------------------------------------------+
+//| Expert initialization function                                   |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+   // Set trading hours
+   startTime = D'22:00:00'; // Start trading at 22:00 (server time)
+   endTime = D'23:59:59'; // End trading at 23:59 (server time)
+   
+   return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Expert deinitialization function                                 |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+   // Perform any necessary cleanup
+}
+
+//+------------------------------------------------------------------+
+//| Expert start function                                            |
+//+------------------------------------------------------------------+
+void OnTick()
+{
+   // Check if current time is within trading hours
+   if (TimeCurrent() >= startTime && TimeCurrent() <= endTime)
+   {
+      // Check if GBPUSD or EURUSD is the current symbol
+      if (Symbol() == 'GBPUSD' || Symbol() == 'EURUSD')
+      {
+         // Generate entry points using linked numbers and settings
+         double entryPoint = GenerateEntryPoint();
+         
+         // Calculate stop loss and take profit levels
+         double stopLossLevel = NormalizeDouble(entryPoint - StopLoss * Point, Digits);
+         double takeProfitLevel = NormalizeDouble(entryPoint + TakeProfit * Point, Digits);
+         
+         // Place pending order
+         int ticket = OrderSend(Symbol(), OP_BUYSTOP, LotSize, entryPoint, slippage, stopLossLevel, takeProfitLevel, 'Sleep Walker EA', magicNumber, 0, clrGreen);
+         
+         // Check if order was successfully placed
+         if (ticket > 0)
+         {
+            Print('Pending order placed: Ticket=', ticket, ' Entry=', entryPoint, ' SL=', stopLossLevel, ' TP=', takeProfitLevel);
+         }
+         else
+         {
+            int error = GetLastError();
+            Print('Failed to place pending order. Error=', error);
+         }
+      }
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Function to generate entry points using linked numbers and settings|
+//+------------------------------------------------------------------+
+double GenerateEntryPoint()
+{
+   // Add logic to generate entry points based on linked numbers and settings
+   double entryPoint = Ask - 0.001; // Placeholder logic
+   
+   return(entryPoint);
+}
+
+//+------------------------------------------------------------------+
+//| Function to normalize a price level to the required number of digits|
+//+------------------------------------------------------------------+
+double NormalizeDouble(double price, int digits)
+{
+   return(MathRound(price * MathPow(10, digits)) / MathPow(10, digits));
+}
